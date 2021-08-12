@@ -2,45 +2,59 @@ import 'dart:core';
 
 import 'assigned_state.dart';
 import 'density_state.dart';
+import 'dart:math';
 
-void main() {}
+void main() {
+  DensityState densityState = DensityState(
+    car_density: [
+      5,
+      25,
+      19,
+      18,
+      10,
+      12,
+      20,
+      15,
+    ],
+  );
+  AssignedState assignedState = calculate(densityState, AssignedState());
+  int i = 0;
+  while (i < 10) {
+    print(densityState.carDensityString());
+    print(assignedState.stateString());
 
-String mapIndexToLabel(int index) {
-  if (index == 0)
-    return "a1";
-  else if (index == 1)
-    return "a2";
-  else if (index == 2)
-    return "b1";
-  else if (index == 3)
-    return "b2";
-  else if (index == 4)
-    return "c1";
-  else if (index == 5)
-    return "c2";
-  else if (index == 6)
-    return "d1";
-  else if (index == 7)
-    return "d2";
-  else
-    throw Exception("Invalid lane index");
+    List<int> onLEDs = assignedState.getOnLEDs();
+    int crossedCars = assignedState.allocatedTime ~/ 2;
+
+    densityState.car_density[onLEDs[0]] > crossedCars
+        ? densityState.car_density[onLEDs[0]] -= crossedCars
+        : densityState.car_density[onLEDs[0]] = 0;
+
+    densityState.car_density[onLEDs[1]] > crossedCars
+        ? densityState.car_density[onLEDs[1]] -= crossedCars
+        : densityState.car_density[onLEDs[1]] = 0;
+
+    densityState = getRandomDensity(densityState.car_density);
+
+    final newState = calculate(densityState, assignedState);
+    assignedState = newState;
+  }
 }
 
-int getAcceptingRoadIndex(int laneIndex) {
-  if (laneIndex % 2 == 1) return int.parse(((laneIndex - 1) / 2).toString());
-  return int.parse((laneIndex / 2).toString());
+DensityState getRandomDensity(List<int> previousDensity) {
+  List<int> densityState = [];
+  for (int i = 0; i < 8; i++) {
+    densityState.add(previousDensity[i] + Random().nextInt(25));
+  }
+  return DensityState(car_density: densityState);
 }
 
-bool canPassTogether(int x, int y) {
-  if ((x < y) && (y == x + 4 || y == x + 1 || y == (x + 7) % 8)) return true;
-  if ((x > y) && (y == (x + 4) % 8 || y == x - 1 || y == (x - 7) % 8))
-    return true;
-  return false;
-}
-
-AssignedState calculate(
-    DensityState densityState, AssignedState previousAssignedState) {
+AssignedState calculate(DensityState densityState,
+    AssignedState previousAssignedState) {
   List<int> waitedLongLanes = previousAssignedState.waitedLongLanes();
+  if (previousAssignedState.critically_waiting.length > 0) {
+    //TODO handle critically waiting lanes
+  }
   if (waitedLongLanes.length > 2) {
     throw Exception("More than two lanes waited long");
     //TODO handle appropriately
@@ -64,10 +78,10 @@ AssignedState calculate(
             ));
       }
       if (densityState
-                  .prime_capacities[getAcceptingRoadIndex(waitedLongLanes[0])] <
-              10 ||
+          .prime_capacities[getAcceptingRoadIndex(waitedLongLanes[0])] <
+          10 ||
           densityState
-                  .prime_capacities[getAcceptingRoadIndex(waitedLongLanes[1])] <
+              .prime_capacities[getAcceptingRoadIndex(waitedLongLanes[1])] <
               10) {
         return calculate(
             densityState,
@@ -101,10 +115,11 @@ AssignedState calculate(
 
 AssignedState evaluateForTwoLanes(int lane1Index, int lane2Index,
     AssignedState previousAssignedState, DensityState densityState) {
-  if (densityState.car_density[lane1Index] > 20 ||
-      densityState.car_density[lane2Index] > 20) {
+  int lane1Density = densityState.car_density[lane1Index];
+  int lane2Density = densityState.car_density[lane2Index];
+  if (lane1Density >= 20 || lane2Density >= 20) {
     int closestWaitingTimeToMax =
-        previousAssignedState.closestWaitingTimeToMax();
+    previousAssignedState.closestWaitingTimeToMax();
     if (closestWaitingTimeToMax < 40) {
       return AssignedState(
         allocatedTime: closestWaitingTimeToMax - 2,
@@ -129,7 +144,7 @@ AssignedState evaluateForTwoLanes(int lane1Index, int lane2Index,
     );
   }
   int timeToAllocate =
-      lane1Index > lane2Index ? lane1Index * 2 : lane2Index * 2;
+  lane1Density > lane2Density ? lane1Density * 2 : lane2Density * 2;
   return AssignedState(
     allocatedTime: timeToAllocate,
     waiting_time: getUpdatedWaitingTime(
@@ -143,13 +158,11 @@ AssignedState evaluateForTwoLanes(int lane1Index, int lane2Index,
   );
 }
 
-List<int> getUpdatedWaitingTime(
-  int led1Index,
-  int led2Index,
-  int timeToAllocate,
-  List<int> previousWaitingTime,
-  List<int> previousCarDensity,
-) {
+List<int> getUpdatedWaitingTime(int led1Index,
+    int led2Index,
+    int timeToAllocate,
+    List<int> previousWaitingTime,
+    List<int> previousCarDensity,) {
   List<int> waitingTime = List.filled(8, 0);
   for (int i = 0; i < 8; i++) {
     if (!(i == led1Index || i == led2Index) && previousCarDensity[i] > 0)
@@ -163,4 +176,17 @@ List<bool> getUpdatedLEDState(int led1Index, int led2Index) {
   ledStates[led1Index] = true;
   ledStates[led2Index] = true;
   return ledStates;
+}
+
+
+int getAcceptingRoadIndex(int laneIndex) {
+  if (laneIndex % 2 == 1) return int.parse(((laneIndex - 1) / 2).toString());
+  return laneIndex ~/ 2;
+}
+
+bool canPassTogether(int x, int y) {
+  if ((x < y) && (y == x + 4 || y == x + 1 || y == (x + 7) % 8)) return true;
+  if ((x > y) && (y == (x + 4) % 8 || y == x - 1 || y == (x - 7) % 8))
+    return true;
+  return false;
 }

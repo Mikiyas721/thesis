@@ -5,7 +5,7 @@ class DensityState {
 
   DensityState({
     this.car_density = const [],
-    this.prime_capacities = const [],
+    this.prime_capacities = const [100, 100, 100, 100],
   });
 
   List<int> getDenseLanePair() {
@@ -60,5 +60,36 @@ class DensityState {
       pair = [2, 6];
     }
     return pair;
+  }
+
+  String carDensityString() {
+    String label = '';
+    String density = '';
+    for(int i=0;i<8;i++){
+      label+='${mapIndexToLabel(i)}   ';
+      density+='${car_density[i]}   ';
+    }
+    return label+'\n'+density;
+  }
+
+  String mapIndexToLabel(int index) {
+    if (index == 0)
+      return "a1";
+    else if (index == 1)
+      return "a2";
+    else if (index == 2)
+      return "b1";
+    else if (index == 3)
+      return "b2";
+    else if (index == 4)
+      return "c1";
+    else if (index == 5)
+      return "c2";
+    else if (index == 6)
+      return "d1";
+    else if (index == 7)
+      return "d2";
+    else
+      throw Exception("Invalid lane index");
   }
 }

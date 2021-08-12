@@ -4,13 +4,23 @@ const int maximum_assignable_time = 40;
 class AssignedState {
   List<int>
       waiting_time; // better to use timestamp of when the side got blocked
-
+  List<int> critically_waiting;
   int allocatedTime;
   List<bool> ledState;
 
   AssignedState({
-    this.ledState = const [],
-    this.waiting_time = const [],
+    this.ledState = const [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    this.waiting_time = const [0, 0, 0, 0, 0, 0, 0, 0],
+    this.critically_waiting = const [],
     this.allocatedTime = 0,
   });
 
@@ -30,5 +40,20 @@ class AssignedState {
     }
     return closest;
   }
+  List<int> getOnLEDs(){
+    List<int> onLEDs = [];
+    for(int i=0;i<8;i++){
+      if(ledState[i]) onLEDs.add(i);
+    }
+    return onLEDs;
+  }
+  String stateString(){
+    String led = '';
+    String waitingTime = '';
+    for(int i=0;i<8;i++){
+      led+='${ledState[i]?1:0}    ';
+      waitingTime+='${waiting_time[i]}   ';
+    }
+    return led+'\n'+waitingTime+'\n\n';
+  }
 }
-
