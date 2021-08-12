@@ -4,6 +4,7 @@ const int maximum_assignable_time = 40;
 class AssignedState {
   List<int>
       waiting_time; // better to use timestamp of when the side got blocked
+
   int allocatedTime;
   List<bool> ledState;
 
@@ -16,7 +17,7 @@ class AssignedState {
   List<int> waitedLongLanes() {
     List<int> waitedLongList = [];
     for (int i = 0; i < 8; i++) {
-      if (i > maximum_waiting_time - 15) waitedLongList.add(i);
+      if (waiting_time[i] > maximum_waiting_time - 15) waitedLongList.add(i);
     }
     return waitedLongList;
   }
@@ -30,3 +31,4 @@ class AssignedState {
     return closest;
   }
 }
+
