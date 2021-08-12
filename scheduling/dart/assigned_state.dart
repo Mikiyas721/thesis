@@ -4,26 +4,13 @@ const int maximum_assignable_time = 40;
 class AssignedState {
   List<int>
       waiting_time; // better to use timestamp of when the side got blocked
-
-  bool is_a1_on;
-  bool is_a2_on;
-  bool is_b1_on;
-  bool is_b2_on;
-  bool is_c1_on;
-  bool is_c2_on;
-  bool is_d1_on;
-  bool is_d2_on;
+  int allocatedTime;
+  List<bool> ledState;
 
   AssignedState({
-    this.is_a1_on = false,
-    this.is_a2_on = false,
-    this.is_b1_on = false,
-    this.is_b2_on = false,
-    this.is_c1_on = false,
-    this.is_c2_on = false,
-    this.is_d1_on = false,
-    this.is_d2_on = false,
+    this.ledState = const [],
     this.waiting_time = const [],
+    this.allocatedTime = 0,
   });
 
   List<int> waitedLongLanes() {
