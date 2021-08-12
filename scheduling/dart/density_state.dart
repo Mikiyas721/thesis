@@ -62,14 +62,81 @@ class DensityState {
     return pair;
   }
 
+  List<int> getBestLimitReachingPair(List<int> limitReachingLanes) {
+    //TODO use the getLanePairs method instead of checking all
+    List<int> bestPair = [];
+    int largest_density = 0;
+    if ((limitReachingLanes.contains(1) && limitReachingLanes.contains(5)) &&
+        (car_density[1] + car_density[5] > largest_density)) {
+      largest_density = car_density[1] + car_density[5];
+      bestPair = [1, 5];
+    }
+    if ((limitReachingLanes.contains(3) && limitReachingLanes.contains(7)) &&
+        (car_density[3] + car_density[7] > largest_density)) {
+      largest_density = car_density[3] + car_density[7];
+      bestPair = [3, 7];
+    }
+    if ((limitReachingLanes.contains(0) && limitReachingLanes.contains(1)) &&
+        (car_density[0] + car_density[1] > largest_density)) {
+      largest_density = car_density[0] + car_density[1];
+      bestPair = [0, 1];
+    }
+    if ((limitReachingLanes.contains(2) && limitReachingLanes.contains(3)) &&
+        (car_density[2] + car_density[3] > largest_density)) {
+      largest_density = car_density[2] + car_density[3];
+      bestPair = [2, 3];
+    }
+    if ((limitReachingLanes.contains(4) && limitReachingLanes.contains(5)) &&
+        (car_density[4] + car_density[5] > largest_density)) {
+      largest_density = car_density[4] + car_density[5];
+      bestPair = [4, 5];
+    }
+    if ((limitReachingLanes.contains(6) && limitReachingLanes.contains(7)) &&
+        (car_density[6] + car_density[7] > largest_density)) {
+      largest_density = car_density[6] + car_density[7];
+      bestPair = [6, 7];
+    }
+    if ((limitReachingLanes.contains(0) && limitReachingLanes.contains(7)) &&
+        (car_density[0] + car_density[7] > largest_density)) {
+      largest_density = car_density[0] + car_density[7];
+      bestPair = [0, 7];
+    }
+    if ((limitReachingLanes.contains(2) && limitReachingLanes.contains(7)) &&
+        (car_density[2] + car_density[7] > largest_density)) {
+      largest_density = car_density[2] + car_density[7];
+      bestPair = [2, 7];
+    }
+    if ((limitReachingLanes.contains(4) && limitReachingLanes.contains(3)) &&
+        (car_density[4] + car_density[3] > largest_density)) {
+      largest_density = car_density[4] + car_density[3];
+      bestPair = [4, 3];
+    }
+    if ((limitReachingLanes.contains(6) && limitReachingLanes.contains(5)) &&
+        (car_density[6] + car_density[5] > largest_density)) {
+      largest_density = car_density[6] + car_density[5];
+      bestPair = [6, 5];
+    }
+    if ((limitReachingLanes.contains(0) && limitReachingLanes.contains(4)) &&
+        (car_density[0] + car_density[4] > largest_density)) {
+      largest_density = car_density[0] + car_density[4];
+      bestPair = [0, 4];
+    }
+    if ((limitReachingLanes.contains(2) && limitReachingLanes.contains(6)) &&
+        (car_density[2] + car_density[6] > largest_density)) {
+      largest_density = car_density[2] + car_density[6];
+      bestPair = [2, 6];
+    }
+    return bestPair;
+  }
+
   String carDensityString() {
     String label = '';
     String density = '';
-    for(int i=0;i<8;i++){
-      label+='${mapIndexToLabel(i)}   ';
-      density+='${car_density[i]}   ';
+    for (int i = 0; i < 8; i++) {
+      label += '${mapIndexToLabel(i)}   ';
+      density += '${car_density[i]}   ';
     }
-    return label+'\n'+density;
+    return label + '\n' + density;
   }
 
   String mapIndexToLabel(int index) {

@@ -38,6 +38,7 @@ void main() {
 
     final newState = calculate(densityState, assignedState);
     assignedState = newState;
+    /*i++;*/
   }
 }
 
@@ -49,60 +50,77 @@ DensityState getRandomDensity(List<int> previousDensity) {
   return DensityState(car_density: densityState);
 }
 
-AssignedState calculate(DensityState densityState,
-    AssignedState previousAssignedState) {
-  List<int> waitedLongLanes = previousAssignedState.waitedLongLanes();
+AssignedState calculate(
+    DensityState densityState, AssignedState previousAssignedState) {
   if (previousAssignedState.critically_waiting.length > 0) {
     //TODO handle critically waiting lanes
   }
-  if (waitedLongLanes.length > 2) {
+  /*if (waitedLongLanes.length > 2) {
     throw Exception("More than two lanes waited long");
     //TODO handle appropriately
-  }
+  }*/
+  List<int> waitedLongLanes = previousAssignedState.waitedLongLanes();
   if (waitedLongLanes.length > 0 && waitedLongLanes.length < 3) {
-    if (canPassTogether(waitedLongLanes[0], waitedLongLanes[1])) {
-      int lane1Density = densityState.car_density[waitedLongLanes[0]];
-      int lane2Density = densityState.car_density[waitedLongLanes[1]];
-      if (lane1Density == 0 && lane2Density == 0) {
-        return calculate(
-            densityState,
-            AssignedState(
-              allocatedTime: 0,
-              waiting_time: getUpdatedWaitingTime(
+    if (waitedLongLanes.length == 2) {
+      if (canPassTogether(waitedLongLanes[0], waitedLongLanes[1])) {
+        int lane1Density = densityState.car_density[waitedLongLanes[0]];
+        int lane2Density = densityState.car_density[waitedLongLanes[1]];
+        if (lane1Density == 0 && lane2Density == 0) {
+          return calculate(
+              densityState,
+              AssignedState(
+                allocatedTime: 0,
+                waiting_time: getUpdatedWaitingTime(
+                    waitedLongLanes[0],
+                    waitedLongLanes[1],
+                    0,
+                    previousAssignedState.waiting_time,
+                    densityState.car_density),
+                ledState: previousAssignedState.ledState,
+              ));
+        }
+        if (densityState.prime_capacities[
+                    getAcceptingRoadIndex(waitedLongLanes[0])] >
+                10 ||
+            densityState.prime_capacities[
+                    getAcceptingRoadIndex(waitedLongLanes[1])] >
+                10) {
+          return calculate(
+              densityState,
+              AssignedState(
+                allocatedTime: 0,
+                waiting_time: getUpdatedWaitingTime(
                   waitedLongLanes[0],
                   waitedLongLanes[1],
                   0,
                   previousAssignedState.waiting_time,
-                  densityState.car_density),
-              ledState: previousAssignedState.ledState,
-            ));
+                  densityState.car_density,
+                ),
+                ledState: previousAssignedState.ledState,
+              ));
+        }
+        throw Exception("waited long but no accepting road");
+        //TODO handle appropriately
+      } else {
+        throw Exception(
+            "The two lanes that waited long can not cross together");
+        //TODO handle appropriately
       }
-      if (densityState
-          .prime_capacities[getAcceptingRoadIndex(waitedLongLanes[0])] <
-          10 ||
-          densityState
-              .prime_capacities[getAcceptingRoadIndex(waitedLongLanes[1])] <
-              10) {
-        return calculate(
-            densityState,
-            AssignedState(
-              allocatedTime: 0,
-              waiting_time: getUpdatedWaitingTime(
-                waitedLongLanes[0],
-                waitedLongLanes[1],
-                0,
-                previousAssignedState.waiting_time,
-                densityState.car_density,
-              ),
-              ledState: previousAssignedState.ledState,
-            ));
-      }
-      throw Exception("waited long but no accepting road");
-      //TODO handle appropriately
-    } else {
-      throw Exception("The two lanes that waited long can not cross together");
-      //TODO handle appropriately
     }
+    return evaluateForTwoLanes(
+      waitedLongLanes[0],
+      getBestPairForWaitedLong(
+          waitedLongLanes[0], previousAssignedState, densityState),
+      previousAssignedState,
+      densityState,
+    );
+  }
+  List<int> limitReachingLanes = previousAssignedState.getLanesReachingLimit();
+  if (limitReachingLanes.length > 2) {
+    List<int> bestLimitReachingPair =
+        densityState.getBestLimitReachingPair(limitReachingLanes);
+    return evaluateForTwoLanes(bestLimitReachingPair[0],
+        bestLimitReachingPair[1], previousAssignedState, densityState);
   }
   List<int> denseLanes = densityState.getDenseLanePair();
   return evaluateForTwoLanes(
@@ -119,14 +137,14 @@ AssignedState evaluateForTwoLanes(int lane1Index, int lane2Index,
   int lane2Density = densityState.car_density[lane2Index];
   if (lane1Density >= 20 || lane2Density >= 20) {
     int closestWaitingTimeToMax =
-    previousAssignedState.closestWaitingTimeToMax();
+        previousAssignedState.closestWaitingTimeToMax();
     if (closestWaitingTimeToMax < 40) {
       return AssignedState(
-        allocatedTime: closestWaitingTimeToMax - 2,
+        allocatedTime: closestWaitingTimeToMax /*- 2*/,
         waiting_time: getUpdatedWaitingTime(
             lane1Index,
             lane2Index,
-            closestWaitingTimeToMax - 2,
+            closestWaitingTimeToMax /*- 2*/,
             previousAssignedState.waiting_time,
             densityState.car_density),
         ledState: getUpdatedLEDState(lane1Index, lane2Index),
@@ -144,7 +162,7 @@ AssignedState evaluateForTwoLanes(int lane1Index, int lane2Index,
     );
   }
   int timeToAllocate =
-  lane1Density > lane2Density ? lane1Density * 2 : lane2Density * 2;
+      lane1Density > lane2Density ? lane1Density * 2 : lane2Density * 2;
   return AssignedState(
     allocatedTime: timeToAllocate,
     waiting_time: getUpdatedWaitingTime(
@@ -158,11 +176,13 @@ AssignedState evaluateForTwoLanes(int lane1Index, int lane2Index,
   );
 }
 
-List<int> getUpdatedWaitingTime(int led1Index,
-    int led2Index,
-    int timeToAllocate,
-    List<int> previousWaitingTime,
-    List<int> previousCarDensity,) {
+List<int> getUpdatedWaitingTime(
+  int led1Index,
+  int led2Index,
+  int timeToAllocate,
+  List<int> previousWaitingTime,
+  List<int> previousCarDensity,
+) {
   List<int> waitingTime = List.filled(8, 0);
   for (int i = 0; i < 8; i++) {
     if (!(i == led1Index || i == led2Index) && previousCarDensity[i] > 0)
@@ -178,9 +198,8 @@ List<bool> getUpdatedLEDState(int led1Index, int led2Index) {
   return ledStates;
 }
 
-
 int getAcceptingRoadIndex(int laneIndex) {
-  if (laneIndex % 2 == 1) return int.parse(((laneIndex - 1) / 2).toString());
+  if (laneIndex % 2 == 1) return (laneIndex - 1) ~/ 2;
   return laneIndex ~/ 2;
 }
 
@@ -189,4 +208,43 @@ bool canPassTogether(int x, int y) {
   if ((x > y) && (y == (x + 4) % 8 || y == x - 1 || y == (x - 7) % 8))
     return true;
   return false;
+}
+
+List<int> getLanePairs(int x) {
+  List<int> possiblePairs = [];
+  if (x % 2 == 0) {
+    possiblePairs.add(x + 1);
+    possiblePairs.add((x - 1) % 8);
+  } else {
+    possiblePairs.add(x - 1);
+    possiblePairs.add((x + 1) % 8);
+  }
+  if (x <= 3) {
+    possiblePairs.add(x + 4);
+  } else {
+    possiblePairs.add(x - 4);
+  }
+  return possiblePairs;
+}
+
+int getBestPairForWaitedLong(
+    int x, AssignedState assignedState, DensityState densityState) {
+  int bestPair = 0;//Might cause problem, used to remove null value error
+  int maxDensity = 0;
+  int maxWaitingTime = 0;
+  List<int> pairs = getLanePairs(x);
+  for (int pair in pairs) {
+    if (assignedState.waiting_time[pair] > maxWaitingTime &&
+        densityState.car_density[pair] > 0) {
+      maxWaitingTime = assignedState.waiting_time[pair];
+      maxDensity = densityState.car_density[pair];
+      bestPair = pair;
+    } else if (assignedState.waiting_time[pair] == maxWaitingTime &&
+        densityState.car_density[pair] > maxDensity) {
+      maxWaitingTime = assignedState.waiting_time[pair];
+      maxDensity = densityState.car_density[pair];
+      bestPair = pair;
+    }
+  }
+  return bestPair;
 }

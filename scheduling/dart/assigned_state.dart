@@ -31,6 +31,13 @@ class AssignedState {
     }
     return waitedLongList;
   }
+  List<int> getLanesReachingLimit() {
+    List<int> reachingLimit = [];
+    for (int i = 0; i < 8; i++) {
+      if (waiting_time[i] >= maximum_waiting_time - maximum_assignable_time) reachingLimit.add(i);
+    }
+    return reachingLimit;
+  }
 
   int closestWaitingTimeToMax() {
     int closest = maximum_waiting_time;
