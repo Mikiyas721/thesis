@@ -31,10 +31,12 @@ class AssignedState {
     }
     return waitedLongList;
   }
+
   List<int> getLanesReachingLimit() {
     List<int> reachingLimit = [];
     for (int i = 0; i < 8; i++) {
-      if (waiting_time[i] >= maximum_waiting_time - maximum_assignable_time) reachingLimit.add(i);
+      if (waiting_time[i] >= maximum_waiting_time - maximum_assignable_time)
+        reachingLimit.add(i);
     }
     return reachingLimit;
   }
@@ -42,25 +44,28 @@ class AssignedState {
   int closestWaitingTimeToMax() {
     int closest = maximum_waiting_time;
     for (int i = 0; i < 8; i++) {
-      if (closest > maximum_waiting_time - waiting_time[i])
+      if (!(waiting_time[i] == maximum_waiting_time) &&
+          closest > maximum_waiting_time - waiting_time[i])
         closest = maximum_waiting_time - waiting_time[i];
     }
     return closest;
   }
-  List<int> getOnLEDs(){
+
+  List<int> getOnLEDs() {
     List<int> onLEDs = [];
-    for(int i=0;i<8;i++){
-      if(ledState[i]) onLEDs.add(i);
+    for (int i = 0; i < 8; i++) {
+      if (ledState[i]) onLEDs.add(i);
     }
     return onLEDs;
   }
-  String stateString(){
+
+  String stateString() {
     String led = '';
     String waitingTime = '';
-    for(int i=0;i<8;i++){
-      led+='${ledState[i]?1:0}    ';
-      waitingTime+='${waiting_time[i]}   ';
+    for (int i = 0; i < 8; i++) {
+      led += '${ledState[i] ? 1 : 0}    ';
+      waitingTime += '${waiting_time[i]}   ';
     }
-    return led+'\n'+waitingTime+'\n\n';
+    return led + '\n' + waitingTime + '\n\n';
   }
 }

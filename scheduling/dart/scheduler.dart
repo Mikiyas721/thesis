@@ -34,7 +34,8 @@ void main() {
         ? densityState.car_density[onLEDs[1]] -= crossedCars
         : densityState.car_density[onLEDs[1]] = 0;
 
-    densityState = getRandomDensity(densityState.car_density);
+    densityState =
+        getRandomDensity(densityState.car_density, assignedState.allocatedTime);
 
     final newState = calculate(densityState, assignedState);
     assignedState = newState;
@@ -42,10 +43,13 @@ void main() {
   }
 }
 
-DensityState getRandomDensity(List<int> previousDensity) {
+DensityState getRandomDensity(List<int> previousDensity, int allocatedTime) {
   List<int> densityState = [];
   for (int i = 0; i < 8; i++) {
-    densityState.add(previousDensity[i] + Random().nextInt(25));
+    int toBeAdded = Random().nextInt(allocatedTime ~/ 2);
+    densityState.add(previousDensity[i] +
+        toBeAdded -
+        (toBeAdded > 4 ? Random().nextInt(toBeAdded ~/ 2) : 0));
   }
   return DensityState(car_density: densityState);
 }
@@ -55,11 +59,11 @@ AssignedState calculate(
   if (previousAssignedState.critically_waiting.length > 0) {
     //TODO handle critically waiting lanes
   }
-  /*if (waitedLongLanes.length > 2) {
+  List<int> waitedLongLanes = previousAssignedState.waitedLongLanes();
+  if (waitedLongLanes.length > 2) {
     throw Exception("More than two lanes waited long");
     //TODO handle appropriately
-  }*/
-  List<int> waitedLongLanes = previousAssignedState.waitedLongLanes();
+  }
   if (waitedLongLanes.length > 0 && waitedLongLanes.length < 3) {
     if (waitedLongLanes.length == 2) {
       if (canPassTogether(waitedLongLanes[0], waitedLongLanes[1])) {
@@ -102,15 +106,24 @@ AssignedState calculate(
         throw Exception("waited long but no accepting road");
         //TODO handle appropriately
       } else {
-        throw Exception(
-            "The two lanes that waited long can not cross together");
-        //TODO handle appropriately
+        int chosenLaneIndex = densityState.car_density[waitedLongLanes[0]] >
+                densityState.car_density[waitedLongLanes[1]]
+            ? waitedLongLanes[0]
+            : waitedLongLanes[1];
+        int chosenLanePairIndex = getBestPairForWaitedLong(
+            chosenLaneIndex, previousAssignedState, densityState);
+        return evaluateForTwoLanes(chosenLanePairIndex, chosenLanePairIndex,
+            previousAssignedState, densityState);
+        throw Exception("Lanes that waited long can not cross together");
       }
     }
     return evaluateForTwoLanes(
       waitedLongLanes[0],
       getBestPairForWaitedLong(
-          waitedLongLanes[0], previousAssignedState, densityState),
+        waitedLongLanes[0],
+        previousAssignedState,
+        densityState,
+      ),
       previousAssignedState,
       densityState,
     );
@@ -140,11 +153,11 @@ AssignedState evaluateForTwoLanes(int lane1Index, int lane2Index,
         previousAssignedState.closestWaitingTimeToMax();
     if (closestWaitingTimeToMax < 40) {
       return AssignedState(
-        allocatedTime: closestWaitingTimeToMax /*- 2*/,
+        allocatedTime: closestWaitingTimeToMax - 2,
         waiting_time: getUpdatedWaitingTime(
             lane1Index,
             lane2Index,
-            closestWaitingTimeToMax /*- 2*/,
+            closestWaitingTimeToMax - 2,
             previousAssignedState.waiting_time,
             densityState.car_density),
         ledState: getUpdatedLEDState(lane1Index, lane2Index),
@@ -210,26 +223,9 @@ bool canPassTogether(int x, int y) {
   return false;
 }
 
-List<int> getLanePairs(int x) {
-  List<int> possiblePairs = [];
-  if (x % 2 == 0) {
-    possiblePairs.add(x + 1);
-    possiblePairs.add((x - 1) % 8);
-  } else {
-    possiblePairs.add(x - 1);
-    possiblePairs.add((x + 1) % 8);
-  }
-  if (x <= 3) {
-    possiblePairs.add(x + 4);
-  } else {
-    possiblePairs.add(x - 4);
-  }
-  return possiblePairs;
-}
-
 int getBestPairForWaitedLong(
     int x, AssignedState assignedState, DensityState densityState) {
-  int bestPair = 0;//Might cause problem, used to remove null value error
+  int bestPair = 0; //Might cause problem, used to remove null value error
   int maxDensity = 0;
   int maxWaitingTime = 0;
   List<int> pairs = getLanePairs(x);
@@ -247,4 +243,29 @@ int getBestPairForWaitedLong(
     }
   }
   return bestPair;
+}
+
+List<int> getLanePairs(int x) {
+  List<int> possiblePairs = [];
+  if (x % 2 == 0) {
+    possiblePairs.add(x + 1);
+    possiblePairs.add((x - 1) % 8);
+  } else {
+    possiblePairs.add(x - 1);
+    possiblePairs.add((x + 1) % 8);
+  }
+  if (x <= 3) {
+    possiblePairs.add(x + 4);
+  } else {
+    possiblePairs.add(x - 4);
+  }
+  return possiblePairs;
+}
+
+List<int> reEvaluateTime(List<int> waiting_time) {
+  print("Re-evaluating");
+  for (int i = 0; i < 8; i++) {
+    if (waiting_time[i] > 40) waiting_time[i] -= 40;
+  }
+  return waiting_time;
 }
