@@ -5,6 +5,36 @@ import 'density_state.dart';
 import 'dart:math';
 
 void main() {
+  ///Single scenario
+  /*DensityState densityState = DensityState(
+    car_density: [
+      0,
+      29,
+      16,
+      13,
+      6,
+      13,
+      17,
+      21,
+    ],
+  );
+  AssignedState assignedState = AssignedState(waiting_time: [
+    0,
+    114,
+    0,
+    74,
+    34,
+    114,
+    0,
+    74,
+  ]);
+  assignedState = calculate(densityState, assignedState);
+
+  print(densityState.carDensityString());
+  print(assignedState.stateString());
+*/
+
+  ///Multiple Randomized scenarios
   DensityState densityState = DensityState(
     car_density: [
       5,
@@ -19,7 +49,7 @@ void main() {
   );
   AssignedState assignedState = calculate(densityState, AssignedState());
   int i = 0;
-  while (i < 10) {
+  while (i < 30) {
     print(densityState.carDensityString());
     print(assignedState.stateString());
 
@@ -39,14 +69,15 @@ void main() {
 
     final newState = calculate(densityState, assignedState);
     assignedState = newState;
-    /*i++;*/
+    i++;
   }
 }
 
 DensityState getRandomDensity(List<int> previousDensity, int allocatedTime) {
   List<int> densityState = [];
   for (int i = 0; i < 8; i++) {
-    int toBeAdded = Random().nextInt(allocatedTime ~/ 2);
+    int toBeAdded =
+        allocatedTime ~/ 4 == 0 ? 0 : Random().nextInt(allocatedTime ~/ 3);
     densityState.add(previousDensity[i] +
         toBeAdded -
         (toBeAdded > 4 ? Random().nextInt(toBeAdded ~/ 2) : 0));
@@ -57,6 +88,7 @@ DensityState getRandomDensity(List<int> previousDensity, int allocatedTime) {
 AssignedState calculate(
     DensityState densityState, AssignedState previousAssignedState) {
   if (previousAssignedState.critically_waiting.length > 0) {
+    throw Exception("Lane is waiting critically");
     //TODO handle critically waiting lanes
   }
   List<int> waitedLongLanes = previousAssignedState.waitedLongLanes();
@@ -83,38 +115,61 @@ AssignedState calculate(
                 ledState: previousAssignedState.ledState,
               ));
         }
+        if (lane1Density == 0) {
+          return calculate(
+              densityState,
+              AssignedState(
+                allocatedTime: 0,
+                waiting_time: getUpdatedWaitingTimeWhen1EmptyLane(
+                    waitedLongLanes[0],
+                    0,
+                    previousAssignedState.waiting_time,
+                    densityState.car_density),
+                ledState: previousAssignedState.ledState,
+              ));
+        }
+        if (lane2Density == 0) {
+          return calculate(
+              densityState,
+              AssignedState(
+                allocatedTime: 0,
+                waiting_time: getUpdatedWaitingTimeWhen1EmptyLane(
+                    waitedLongLanes[1],
+                    0,
+                    previousAssignedState.waiting_time,
+                    densityState.car_density),
+                ledState: previousAssignedState.ledState,
+              ));
+        }
         if (densityState.prime_capacities[
                     getAcceptingRoadIndex(waitedLongLanes[0])] >
                 10 ||
             densityState.prime_capacities[
                     getAcceptingRoadIndex(waitedLongLanes[1])] >
                 10) {
-          return calculate(
-              densityState,
-              AssignedState(
-                allocatedTime: 0,
-                waiting_time: getUpdatedWaitingTime(
-                  waitedLongLanes[0],
-                  waitedLongLanes[1],
-                  0,
-                  previousAssignedState.waiting_time,
-                  densityState.car_density,
-                ),
-                ledState: previousAssignedState.ledState,
-              ));
+          return evaluateForTwoLanes(waitedLongLanes[0], waitedLongLanes[1],
+              previousAssignedState, densityState);
         }
         throw Exception("waited long but no accepting road");
         //TODO handle appropriately
       } else {
-        int chosenLaneIndex = densityState.car_density[waitedLongLanes[0]] >
-                densityState.car_density[waitedLongLanes[1]]
-            ? waitedLongLanes[0]
-            : waitedLongLanes[1];
+        int chosenLaneIndex;
+        if (previousAssignedState.waiting_time[waitedLongLanes[0]] ==
+            waitedLongLanes[1])
+          chosenLaneIndex = densityState.car_density[waitedLongLanes[0]] >
+                  densityState.car_density[waitedLongLanes[1]]
+              ? waitedLongLanes[0]
+              : waitedLongLanes[1];
+        else
+          chosenLaneIndex =
+              previousAssignedState.waiting_time[waitedLongLanes[0]] >
+                      previousAssignedState.waiting_time[waitedLongLanes[1]]
+                  ? waitedLongLanes[0]
+                  : waitedLongLanes[1];
         int chosenLanePairIndex = getBestPairForWaitedLong(
             chosenLaneIndex, previousAssignedState, densityState);
-        return evaluateForTwoLanes(chosenLanePairIndex, chosenLanePairIndex,
+        return evaluateForTwoLanes(chosenLaneIndex, chosenLanePairIndex,
             previousAssignedState, densityState);
-        throw Exception("Lanes that waited long can not cross together");
       }
     }
     return evaluateForTwoLanes(
@@ -150,7 +205,7 @@ AssignedState evaluateForTwoLanes(int lane1Index, int lane2Index,
   int lane2Density = densityState.car_density[lane2Index];
   if (lane1Density >= 20 || lane2Density >= 20) {
     int closestWaitingTimeToMax =
-        previousAssignedState.closestWaitingTimeToMax();
+        previousAssignedState.closestWaitingTimeToMax(lane1Index, lane2Index);
     if (closestWaitingTimeToMax < 40) {
       return AssignedState(
         allocatedTime: closestWaitingTimeToMax - 2,
@@ -199,6 +254,20 @@ List<int> getUpdatedWaitingTime(
   List<int> waitingTime = List.filled(8, 0);
   for (int i = 0; i < 8; i++) {
     if (!(i == led1Index || i == led2Index) && previousCarDensity[i] > 0)
+      waitingTime[i] = previousWaitingTime[i] + timeToAllocate;
+  }
+  return waitingTime;
+}
+
+List<int> getUpdatedWaitingTimeWhen1EmptyLane(
+  int ledIndex,
+  int timeToAllocate,
+  List<int> previousWaitingTime,
+  List<int> previousCarDensity,
+) {
+  List<int> waitingTime = List.filled(8, 0);
+  for (int i = 0; i < 8; i++) {
+    if (i != ledIndex && previousCarDensity[i] > 0)
       waitingTime[i] = previousWaitingTime[i] + timeToAllocate;
   }
   return waitingTime;

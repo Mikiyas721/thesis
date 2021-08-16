@@ -41,10 +41,12 @@ class AssignedState {
     return reachingLimit;
   }
 
-  int closestWaitingTimeToMax() {
+  int closestWaitingTimeToMax(int selectedLane1, int selectedLane2) {
+    //Not effective when two lanes waited long but cant pass together
     int closest = maximum_waiting_time;
     for (int i = 0; i < 8; i++) {
-      if (!(waiting_time[i] == maximum_waiting_time) &&
+      if(i==selectedLane1||i==selectedLane2) continue;
+      else if (!(waiting_time[i] == maximum_waiting_time) &&
           closest > maximum_waiting_time - waiting_time[i])
         closest = maximum_waiting_time - waiting_time[i];
     }
@@ -66,6 +68,6 @@ class AssignedState {
       led += '${ledState[i] ? 1 : 0}    ';
       waitingTime += '${waiting_time[i]}   ';
     }
-    return led + '\n' + waitingTime + '\n\n';
+    return led + '\n' + waitingTime + '   Allocated Time ${allocatedTime} sec' + '\n\n';
   }
 }
