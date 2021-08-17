@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:async';
 
 import 'assigned_state.dart';
 import 'density_state.dart';
@@ -48,7 +49,14 @@ void main() {
     ],
   );
   AssignedState assignedState = calculate(densityState, AssignedState());
-  int i = 0;
+
+  ///Using timer
+  Timer(Duration(seconds: assignedState.allocatedTime), () {
+    whenTimeIsUp(assignedState, densityState);
+  });
+
+  ///Using Loop
+  /*int i = 0;
   while (i < 30) {
     print(densityState.carDensityString());
     print(assignedState.stateString());
@@ -70,7 +78,31 @@ void main() {
     final newState = calculate(densityState, assignedState);
     assignedState = newState;
     i++;
-  }
+  }*/
+}
+
+void whenTimeIsUp(AssignedState assignedState, DensityState densityState) {
+  print(densityState.carDensityString());
+  print(assignedState.stateString());
+
+  List<int> onLEDs = assignedState.getOnLEDs();
+  int crossedCars = assignedState.allocatedTime ~/ 2;
+
+  densityState.car_density[onLEDs[0]] > crossedCars
+      ? densityState.car_density[onLEDs[0]] -= crossedCars
+      : densityState.car_density[onLEDs[0]] = 0;
+
+  densityState.car_density[onLEDs[1]] > crossedCars
+      ? densityState.car_density[onLEDs[1]] -= crossedCars
+      : densityState.car_density[onLEDs[1]] = 0;
+
+  densityState =
+      getRandomDensity(densityState.car_density, assignedState.allocatedTime);
+
+  assignedState = calculate(densityState, assignedState);
+  Timer(Duration(seconds: assignedState.allocatedTime), () {
+    whenTimeIsUp(assignedState, densityState);
+  });
 }
 
 DensityState getRandomDensity(List<int> previousDensity, int allocatedTime) {
