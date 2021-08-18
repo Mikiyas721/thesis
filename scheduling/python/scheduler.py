@@ -5,75 +5,30 @@ from assigned_state import AssignedState
 from assigned_state import maximum_assignable_time
 from density_state import DensityState
 
-# side c lights
-red_c1 = LED(2)
-green_c1 = LED(3)
-red_c2 = LED(17)
-green_c2 = LED(27)
 
-# side b lights
-red_b1 = LED(5)
-green_b1 = LED(6)
-red_b2 = LED(13)
-green_b2 = LED(19)
-
-# side d lights
-red_d1 = LED(23)
-green_d1 = LED(24)
-red_d2 = LED(8)
-green_d2 = LED(7)
-
-# side a lights
-red_a1 = LED(12)
-green_a1 = LED(16)
-red_a2 = LED(20)
-green_a2 = LED(21)
-
-
-def main():
-    ###Single scenario
-    density_state: DensityState = DensityState(car_density=[0, 29, 16, 13, 6, 13, 17, 21])
-    assigned_state: AssignedState = AssignedState(waiting_time=[0, 114, 0, 74, 34, 114, 0, 74])
-    assigned_state = calculate(density_state, assigned_state)
-
-    print(density_state.car_density_string())
-    print(assigned_state.state_string())
-
-    ###Multiple Randomized scenarios
-    density_state = DensityState(car_density=[5, 25, 19, 18, 10, 12, 20, 15, ])
-    assigned_state: AssignedState = calculate(density_state, AssignedState())
-
-    ##Using timer
-    # Timer(Duration(seconds: assigned_state.allocatedTime), ()
-    # {
-    #    when_time_is_up(assigned_state, density_state)
-    # });
-
-    ##Using Loop
-    i: int = 0
-    while i < 30:
-        print(density_state.car_density_string())
-        print(assigned_state.state_string())
-
-        on_led_s: [int] = assigned_state.get_on_led_s()
-        crossed_cars: int = assigned_state.allocatedTime // 2
-
-        if density_state.car_density[on_led_s[0]] > crossed_cars:
-            density_state.car_density[on_led_s[0]] -= crossed_cars
-        else:
-            density_state.car_density[on_led_s[0]] = 0
-
-        if density_state.car_density[on_led_s[1]] > crossed_cars:
-            density_state.car_density[on_led_s[1]] -= crossed_cars
-        else:
-            density_state.car_density[on_led_s[1]] = 0
-
-        density_state = \
-            get_random_density(density_state.car_density, assigned_state.allocatedTime)
-
-        new_state = calculate(density_state, assigned_state)
-        assigned_state = new_state
-        i += i
+# # side c lights
+# red_c1 = LED(2)
+# green_c1 = LED(3)
+# red_c2 = LED(17)
+# green_c2 = LED(27)
+#
+# # side b lights
+# red_b1 = LED(5)
+# green_b1 = LED(6)
+# red_b2 = LED(13)
+# green_b2 = LED(19)
+#
+# # side d lights
+# red_d1 = LED(23)
+# green_d1 = LED(24)
+# red_d2 = LED(8)
+# green_d2 = LED(7)
+#
+# # side a lights
+# red_a1 = LED(12)
+# green_a1 = LED(16)
+# red_a2 = LED(20)
+# green_a2 = LED(21)
 
 
 def when_time_is_up(assigned_state: AssignedState, density_state: DensityState):
@@ -81,7 +36,7 @@ def when_time_is_up(assigned_state: AssignedState, density_state: DensityState):
     print(assigned_state.state_string())
 
     on_led_s: [int] = assigned_state.get_on_led_s()
-    crossed_cars: int = assigned_state.allocatedTime // 2
+    crossed_cars: int = assigned_state.allocated_time // 2
 
     if density_state.car_density[on_led_s[0]] > crossed_cars:
         density_state.car_density[on_led_s[0]] -= crossed_cars
@@ -93,7 +48,7 @@ def when_time_is_up(assigned_state: AssignedState, density_state: DensityState):
     else:
         density_state.car_density[on_led_s[1]] = 0
 
-    density_state = get_random_density(density_state.car_density, assigned_state.allocatedTime)
+    density_state = get_random_density(density_state.car_density, assigned_state.allocated_time)
 
     assigned_state = calculate(density_state, assigned_state)
     # Timer(Duration(seconds: assigned_state.allocatedTime), ()
@@ -108,9 +63,9 @@ def get_random_density(previous_density: [int], allocated_time: int) -> DensityS
         if allocated_time // 4 == 0:
             to_be_added = 0
         else:
-            to_be_added = random.random()*allocated_time // 3
+            to_be_added = random.random() * allocated_time // 3
         if to_be_added > 4:
-            to_be_subtracted = random.random()*to_be_added // 2
+            to_be_subtracted = random.random() * to_be_added // 2
         else:
             to_be_subtracted = 0
         density_state.append(previous_density[i] + to_be_added - to_be_subtracted)
@@ -118,75 +73,75 @@ def get_random_density(previous_density: [int], allocated_time: int) -> DensityS
 
 
 def calculate(density_state: DensityState, previous_assigned_state: AssignedState) -> AssignedState:
-    if previous_assigned_state.critically_waiting.length > 0:
+    if len(previous_assigned_state.critically_waiting[0]) > 0:
         raise Exception("Lane is waiting critically")
         # TODO handle critically waiting lanes
-    waited_long_lanes: [int] = previous_assigned_state.waited_long_lanes()
-    if waited_long_lanes.length > 2:
+    waited_long_lanes: list = previous_assigned_state.waited_long_lanes()
+    if len(waited_long_lanes) > 2:
         raise Exception("More than two lanes waited long")
         # TODO handle appropriately
-    if 0 < waited_long_lanes.length < 3:
-        if waited_long_lanes.length == 2:
+    if 0 < len(waited_long_lanes) < 3:
+        if len(waited_long_lanes) == 2:
             if can_pass_together(waited_long_lanes[0], waited_long_lanes[1]):
-                lane1_density: int = density_state.car_density[waited_long_lanes[0]]
-                lane2_density: int = density_state.car_density[waited_long_lanes[1]]
+                lane1_density: int = density_state.car_density[0][waited_long_lanes[0]]
+                lane2_density: int = density_state.car_density[0][waited_long_lanes[1]]
                 if lane1_density == 0 and lane2_density == 0:
                     return calculate(
                         density_state,
                         AssignedState(
-                            allocatedTime=0,
+                            allocated_time=0,
                             waiting_time=get_updated_waiting_time(
                                 waited_long_lanes[0],
                                 waited_long_lanes[1],
                                 0,
                                 previous_assigned_state.waiting_time,
                                 density_state.car_density),
-                            ledState=previous_assigned_state.ledState,
+                            led_state=previous_assigned_state.led_state,
                         ))
                 if lane1_density == 0:
                     return calculate(
                         density_state,
                         AssignedState(
-                            allocatedTime=0,
+                            allocated_time=0,
                             waiting_time=get_updated_waiting_time_when_1_empty_lane(
                                 waited_long_lanes[0],
                                 0,
                                 previous_assigned_state.waiting_time,
                                 density_state.car_density),
-                            ledState=previous_assigned_state.ledState,
+                            led_state=previous_assigned_state.led_state,
                         ))
                 if lane2_density == 0:
                     return calculate(
                         density_state,
                         AssignedState(
-                            allocatedTime=0,
+                            allocated_time=0,
                             waiting_time=get_updated_waiting_time_when_1_empty_lane(
                                 waited_long_lanes[1],
                                 0,
                                 previous_assigned_state.waiting_time,
                                 density_state.car_density),
-                            ledState=previous_assigned_state.ledState,
+                            led_state=previous_assigned_state.led_state,
                         ))
-                if (density_state.prime_capacities[get_accepting_road_index(waited_long_lanes[0])] > 10 or
+                if (density_state.prime_capacities[0][get_accepting_road_index(waited_long_lanes[0])] > 10 or
                         density_state.prime_capacities[
                             get_accepting_road_index(waited_long_lanes[1])] > 10):
                     return evaluate_for_two_lanes(waited_long_lanes[0], waited_long_lanes[1],
-                                                  previous_assigned_state, density_state);
-                    raise Exception("waited long but no accepting road");
+                                                  previous_assigned_state, density_state)
+                    raise Exception("waited long but no accepting road")
                     # TODO handle appropriately
 
             else:
                 chosen_lane_index: int
-                if previous_assigned_state.waiting_time[waited_long_lanes[0]] == waited_long_lanes[1]:
+                if previous_assigned_state.waiting_time[0][waited_long_lanes[0]] == waited_long_lanes[1]:
                     chosen_lane_index = waited_long_lanes[0] \
                         if density_state.car_density[waited_long_lanes[0]] > \
-                           density_state.car_density[waited_long_lanes[1]] else \
+                        density_state.car_density[waited_long_lanes[1]] else \
                         waited_long_lanes[1]
 
                 else:
                     chosen_lane_index = waited_long_lanes[0] \
-                        if previous_assigned_state.waiting_time[waited_long_lanes[0]] > \
-                           previous_assigned_state.waiting_time[waited_long_lanes[1]] else \
+                        if previous_assigned_state.waiting_time[0][waited_long_lanes[0]] > \
+                        previous_assigned_state.waiting_time[0][waited_long_lanes[1]] else \
                         waited_long_lanes[1]
 
                 chosen_lane_pair_index: int = get_best_pair_for_waited_long(
@@ -204,13 +159,13 @@ def calculate(density_state: DensityState, previous_assigned_state: AssignedStat
             density_state,
         )
 
-    limit_reaching_lanes: [int] = previous_assigned_state.get_lanes_reaching_limit()
-    if limit_reaching_lanes.length > 2:
-        best_limit_reaching_pair: [int] = density_state.get_best_limit_reaching_pair(limit_reaching_lanes)
+    limit_reaching_lanes: list = previous_assigned_state.get_lanes_reaching_limit()
+    if len(limit_reaching_lanes) > 2:
+        best_limit_reaching_pair: list = density_state.get_best_limit_reaching_pair(limit_reaching_lanes)
         return evaluate_for_two_lanes(best_limit_reaching_pair[0],
                                       best_limit_reaching_pair[1], previous_assigned_state, density_state)
 
-    dense_lanes: [int] = density_state.get_dense_lane_pair()
+    dense_lanes: list = density_state.get_dense_lane_pair()
     return evaluate_for_two_lanes(
         dense_lanes[0],
         dense_lanes[1],
@@ -221,39 +176,39 @@ def calculate(density_state: DensityState, previous_assigned_state: AssignedStat
 
 def evaluate_for_two_lanes(lane1_index: int, lane2_index: int, previous_assigned_state: AssignedState,
                            density_state: DensityState) -> AssignedState:
-    lane1_density: int = density_state.car_density[lane1_index]
-    lane2_density: int = density_state.car_density[lane2_index]
+    lane1_density: int = density_state.car_density[0][lane1_index]
+    lane2_density: int = density_state.car_density[0][lane2_index]
     if lane1_density >= 20 or lane2_density >= 20:
         closest_waiting_time_to_max: int = previous_assigned_state.closest_waiting_time_to_max(lane1_index,
-                                                                                               lane2_index);
+                                                                                               lane2_index)
         if closest_waiting_time_to_max < 40:
             return AssignedState(
-                allocatedTime=closest_waiting_time_to_max - 2,
+                allocated_time=closest_waiting_time_to_max - 2,
                 waiting_time=get_updated_waiting_time(
                     lane1_index,
                     lane2_index,
                     closest_waiting_time_to_max - 2,
                     previous_assigned_state.waiting_time,
                     density_state.car_density),
-                ledState=get_updated_led_state(lane1_index, lane2_index),
-            );
+                led_state=get_updated_led_state(lane1_index, lane2_index),
+            )
         return AssignedState(
-            allocatedTime=maximum_assignable_time,
+            allocated_time=maximum_assignable_time,
             waiting_time=get_updated_waiting_time(
                 lane1_index,
                 lane2_index,
                 maximum_assignable_time,
                 previous_assigned_state.waiting_time,
                 density_state.car_density),
-            ledState=get_updated_led_state(lane1_index, lane2_index),
+            led_state=get_updated_led_state(lane1_index, lane2_index),
         )
     time_to_allocate: int
     if lane1_density > lane2_density:
         time_to_allocate = lane1_density * 2
     else:
-        time_to_allocate = lane2_density * 2;
+        time_to_allocate = lane2_density * 2
     return AssignedState(
-        allocatedTime=time_to_allocate,
+        allocated_time=time_to_allocate,
         waiting_time=get_updated_waiting_time(
             lane1_index,
             lane2_index,
@@ -261,31 +216,31 @@ def evaluate_for_two_lanes(lane1_index: int, lane2_index: int, previous_assigned
             previous_assigned_state.waiting_time,
             density_state.car_density,
         ),
-        ledState=get_updated_led_state(lane1_index, lane2_index),
-    );
+        led_state=get_updated_led_state(lane1_index, lane2_index),
+    )
 
 
 def get_updated_waiting_time(led_1_index: int, led_2_index: int, time_to_allocate: int,
-                             previous_waiting_time: [int], previous_car_density: [int]) -> [int]:
-    waiting_time: [int] = list.filled(8, 0)
+                             previous_waiting_time: list, previous_car_density: list) -> list:
+    waiting_time: [int] = [0] * 8
     for i in range(0, 8):
-        if not (i != led_1_index or i == led_2_index) and previous_car_density[i] > 0:
-            waiting_time[i] = previous_waiting_time[i] + time_to_allocate
-        return waiting_time
+        if not (i == led_1_index or i == led_2_index) and previous_car_density[0][i] > 0:
+            waiting_time[i] = previous_waiting_time[0][i] + time_to_allocate
+    return waiting_time
 
 
 def get_updated_waiting_time_when_1_empty_lane(led_index: int, time_to_allocate: int,
-                                               previous_waiting_time: [int],
-                                               previous_car_density: [int], ) -> [int]:
-    waiting_time: [int] = list.filled(8, 0)
+                                               previous_waiting_time: list,
+                                               previous_car_density: list, ) -> list:
+    waiting_time: [int] = [0] * 8
     for i in range(0, 8):
         if i != led_index and previous_car_density[i] > 0:
             waiting_time[i] = previous_waiting_time[i] + time_to_allocate
     return waiting_time
 
 
-def get_updated_led_state(led_1_index: int, led_2_index: int) -> [bool]:
-    led_states: [bool] = list.filled(8, False)
+def get_updated_led_state(led_1_index: int, led_2_index: int) -> list:
+    led_states: [bool] = [False] * 8
     led_states[led_1_index] = True
     led_states[led_2_index] = True
     return led_states
@@ -313,20 +268,20 @@ def get_best_pair_for_waited_long \
     max_waiting_time: int = 0
     pairs: [int] = get_lane_pairs(x)
     for pair in pairs:
-        if (assigned_state.waiting_time[pair] > max_waiting_time and
-                density_state.car_density[pair] > 0):
-            max_waiting_time = assigned_state.waiting_time[pair]
-            max_density = density_state.car_density[pair]
+        if (assigned_state.waiting_time[0][pair] > max_waiting_time and
+                density_state.car_density[0][pair] > 0):
+            max_waiting_time = assigned_state.waiting_time[0][pair]
+            max_density = density_state.car_density[0][pair]
             best_pair = pair
-        elif (assigned_state.waiting_time[pair] == max_waiting_time and
-              density_state.car_density[pair] > max_density):
-            max_waiting_time = assigned_state.waiting_time[pair]
-            max_density = density_state.car_density[pair]
+        elif (assigned_state.waiting_time[0][pair] == max_waiting_time and
+              density_state.car_density[0][pair] > max_density):
+            max_waiting_time = assigned_state.waiting_time[0][pair]
+            max_density = density_state.car_density[0][pair]
             best_pair = pair
     return best_pair
 
 
-def get_lane_pairs(x: int) -> [int]:
+def get_lane_pairs(x: int) -> list:
     possible_pairs: [int] = []
     if x % 2 == 0:
         possible_pairs.append(x + 1)
@@ -341,9 +296,58 @@ def get_lane_pairs(x: int) -> [int]:
     return possible_pairs
 
 
-def re_evaluate_time(waiting_time: [int]) -> [int]:
+def re_evaluate_time(waiting_time: list) -> list:
     print("Re-evaluating")
     for i in range(0, 8):
         if waiting_time[i] > 40:
             waiting_time[i] -= 40
     return waiting_time
+
+
+def main():
+    # Single scenario
+    # density_state: DensityState = DensityState(car_density=[0, 29, 16, 13, 6, 13, 17, 21])
+    # assigned_state: AssignedState = AssignedState(waiting_time=[0, 114, 0, 74, 34, 114, 0, 74])
+    # assigned_state = calculate(density_state, assigned_state)
+
+    # print(density_state.car_density_string())
+    # print(assigned_state.state_string())
+
+    # Multiple Randomized scenarios
+    density_state = DensityState(car_density=[5, 25, 19, 18, 10, 12, 20, 15])
+    assigned_state: AssignedState = calculate(density_state, AssignedState())
+
+    # Using timer
+    # Timer(Duration(seconds: assigned_state.allocatedTime), ()
+    # {
+    #    when_time_is_up(assigned_state, density_state)
+    # });
+
+    # Using Loop
+    i: int = 0
+    while i < 30:
+        print(density_state.car_density_string())
+        print(assigned_state.state_string())
+
+        on_led_s: [int] = assigned_state.get_on_led_s()
+        crossed_cars: int = assigned_state.allocated_time[0] // 2
+
+        if density_state.car_density[0][on_led_s[0]] > crossed_cars:
+            density_state.car_density[0][on_led_s[0]] -= crossed_cars
+        else:
+            density_state.car_density[0][on_led_s[0]] = 0
+
+        if density_state.car_density[0][on_led_s[1]] > crossed_cars:
+            density_state.car_density[0][on_led_s[1]] -= crossed_cars
+        else:
+            density_state.car_density[0][on_led_s[1]] = 0
+
+        density_state = \
+            get_random_density(density_state.car_density[0], assigned_state.allocated_time[0])
+
+        new_state = calculate(density_state, assigned_state)
+        assigned_state = new_state
+        i = i + 1
+
+
+main()
