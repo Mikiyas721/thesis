@@ -4,12 +4,15 @@ maximum_assignable_time = 40
 
 class AssignedState(object):
 
-    def __init__(self, led_state=[False] * 8, waiting_time=[0] * 8,
-                 critically_waiting=[], allocated_time=0):
-        self.led_state: list = led_state,
-        self.waiting_time: list = waiting_time,
-        self.critically_waiting: list = critically_waiting,
-        self.allocated_time: int = allocated_time,
+    def __init__(self,
+                 led_state=None,
+                 waiting_time=None,
+                 critically_waiting=None,
+                 allocated_time=None):
+        self.led_state: list = [False] * 8 if led_state is None else led_state,
+        self.waiting_time: list = [0] * 8 if waiting_time is None else waiting_time,
+        self.critically_waiting: list = [] if critically_waiting is None else critically_waiting,
+        self.allocated_time: int = 0 if allocated_time is None else allocated_time,
 
     def waited_long_lanes(self):
         waited_long_list = []
@@ -31,8 +34,8 @@ class AssignedState(object):
         for i in range(0, 8):
             if i == selected_lane1 | i == selected_lane2:
                 continue
-            elif ((self.waiting_time[0][i] != maximum_waiting_time) and
-                  closest > maximum_waiting_time - self.waiting_time[0][i]):
+            if ((self.waiting_time[0][i] != maximum_waiting_time) and
+                    closest > maximum_waiting_time - self.waiting_time[0][i]):
                 closest = maximum_waiting_time - self.waiting_time[0][i]
         return closest
 
