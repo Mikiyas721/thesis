@@ -192,6 +192,7 @@ def can_pass_together(x: int, y: int):
 def get_best_pair_for_waited_long(x: int, assigned_state: AssignedState, density_state: DensityState) -> int:
     best_pair: int = 0
     # Might cause problem, used to remove null value error
+    # Check with code before refactor
     max_density: int = 0
     max_waiting_time: int = 0
     pairs: [int] = get_lane_pairs(x)

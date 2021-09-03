@@ -33,7 +33,6 @@ class DensityState(object):
         return dense_pair
 
     def get_best_limit_reaching_pair(self, limit_reaching_lanes: [int]):
-        # TODO use the getLanePairs method instead of checking all
         best_pair: [int] = []
         largest_density: int = 0
 
