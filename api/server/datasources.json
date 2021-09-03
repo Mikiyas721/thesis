@@ -1,0 +1,13 @@
+{
+  "mongodb": {
+    "host": "localhost",
+    "port": 27017,
+    "url": "",
+    "database": "vehicle_record",
+    "password": "",
+    "name": "mongodb",
+    "user": "",
+    "useNewUrlParser": true,
+    "connector": "mongodb"
+  }
+}

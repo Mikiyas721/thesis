@@ -1,0 +1,39 @@
+{
+  "name": "vehicle_count",
+  "plural": "vehicle_counts",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "CreatedAtStamp": {}
+  },
+  "properties": {
+    "side": {
+      "type": "string",
+      "required": true
+    },
+    "lane_number": {
+      "type": "number",
+      "required": true
+    },
+    "vehicle_number": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "crossRoad": {
+      "type": "belongsTo",
+      "model": "cross_road",
+      "foreignKey": "cross_road_id",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
