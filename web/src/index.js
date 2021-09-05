@@ -11,7 +11,7 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', ()=> {
     const elements = document.querySelectorAll('.collapsible');
     M.Collapsible.init(elements);
 });

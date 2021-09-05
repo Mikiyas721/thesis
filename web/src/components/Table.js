@@ -1,7 +1,7 @@
 import React from 'react';
-import HeaderTitle from '../components/HeaderTitle'
+import HeaderTitle from './HeaderTitle'
 
-const Table = (props) => {
+const Table = ({locationDetails, list}) => {
     return (
         <div className="row">
             <div className="col">
@@ -10,15 +10,15 @@ const Table = (props) => {
                         <div className="card-title"
                              style={{
                                  display: "flex",
-                                 flexDirection: "row",
+                                 flexDirection: "row"
                              }}>
-                            <HeaderTitle title="City" content="A.A."/>
-                            <HeaderTitle title="SubCity" content="N.S."/>
-                            <HeaderTitle title="Latitude" content="2° 29'E"/>
-                            <HeaderTitle title="Longitude" content="5° 45'N"/>
-                            <HeaderTitle title="Common Name" content="Adey Ababa"/>
+                            <HeaderTitle title="City" content={locationDetails.city}/>
+                            <HeaderTitle title="SubCity" content={locationDetails.subCity}/>
+                            <HeaderTitle title="Latitude" content={locationDetails.latitude}/>
+                            <HeaderTitle title="Longitude" content={locationDetails.longitude}/>
+                            <HeaderTitle title="Common Name" content={locationDetails.name}/>
                         </div>
-                        <table style={{width: "900px"}}>
+                        <table className="striped centered" style={{width: "900px"}}>
                             <thead>
                             <tr>
                                 <th>#</th>
@@ -31,78 +31,16 @@ const Table = (props) => {
                             </thead>
 
                             <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>b</td>
-                                <td>1</td>
-                                <td>40</td>
-                                <td>9/03/21</td>
-                                <td>9:23 PM</td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>a</td>
-                                <td>1</td>
-                                <td>30</td>
-                                <td>9/04/21</td>
-                                <td>4:23 AM</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>d</td>
-                                <td>2</td>
-                                <td>18</td>
-                                <td>7/23/21</td>
-                                <td>10:23 PM</td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>b</td>
-                                <td>1</td>
-                                <td>40</td>
-                                <td>9/03/21</td>
-                                <td>9:23 PM</td>
-                            </tr>
-                            <tr>
-                                <td>5</td>
-                                <td>a</td>
-                                <td>1</td>
-                                <td>30</td>
-                                <td>9/04/21</td>
-                                <td>4:23 AM</td>
-                            </tr>
-                            <tr>
-                                <td>6</td>
-                                <td>d</td>
-                                <td>2</td>
-                                <td>18</td>
-                                <td>7/23/21</td>
-                                <td>10:23 PM</td>
-                            </tr>
-                            <tr>
-                                <td>7</td>
-                                <td>b</td>
-                                <td>1</td>
-                                <td>40</td>
-                                <td>9/03/21</td>
-                                <td>9:23 PM</td>
-                            </tr>
-                            <tr>
-                                <td>8</td>
-                                <td>a</td>
-                                <td>1</td>
-                                <td>30</td>
-                                <td>9/04/21</td>
-                                <td>4:23 AM</td>
-                            </tr>
-                            <tr>
-                                <td>9</td>
-                                <td>d</td>
-                                <td>2</td>
-                                <td>18</td>
-                                <td>7/23/21</td>
-                                <td>10:23 PM</td>
-                            </tr>
+                            {list.map((data, index) => (
+                                <tr>
+                                    <td>{index+1}</td>
+                                    <td>{data.side}</td>
+                                    <td>{data.laneNumber}</td>
+                                    <td>{data.count}</td>
+                                    <td>{data.date}</td>
+                                    <td>{data.time}</td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>
