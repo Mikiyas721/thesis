@@ -1,87 +1,64 @@
 import './App.css';
-import React from "react";
+import React, {Component} from "react";
 import CollapsibleCities from "./components/CollapsibleCities";
 import NavBar from "./components/NavBar";
-import Table from "./components/Table";
+import MyTable from "./components/MyTable";
+import axios from "axios";
+import {accessToken, apiBaseUrl} from './congif'
 
-const App = () => {
-    return (
-        <div>
-            <NavBar title="Traffic Control"/>
-            <div className="flexbox-container"
-                 style={{display: "flex", flexDirection: "row"}}>
-                <CollapsibleCities className="SideList"/>
-                <Table locationDetails={
-                    {
-                        city: "A.A.",
-                        subCity: "N.S.",
-                        latitude: "2° 29'E",
-                        longitude: "5° 45'N",
-                        name: "Adey Ababa",
-                    }
-                } list={[
-                    {
-                        side: 'b',
-                        laneNumber: '1',
-                        count: '10',
-                        date: '9/03/21',
-                        time: '11:46AM'
-                    },
-                    {
-                        side: 'a',
-                        laneNumber: '1',
-                        count: '40',
-                        date: '9/04/21',
-                        time: '09:46AM'
-                    },
-                    {
-                        side: 'c',
-                        laneNumber: '2',
-                        count: '15',
-                        date: '19/03/21',
-                        time: '11:30PM'
-                    },
-                    {
-                        side: 'd',
-                        laneNumber: '1',
-                        count: '35',
-                        date: '9/06/21',
-                        time: '02:46AM'
-                    },
-                    {
-                        side: 'b',
-                        laneNumber: '1',
-                        count: '10',
-                        date: '9/03/21',
-                        time: '11:46AM'
-                    },
-                    {
-                        side: 'a',
-                        laneNumber: '1',
-                        count: '40',
-                        date: '9/04/21',
-                        time: '09:46AM'
-                    },
-                    {
-                        side: 'c',
-                        laneNumber: '2',
-                        count: '15',
-                        date: '19/03/21',
-                        time: '11:30PM'
-                    },
-                    {
-                        side: 'd',
-                        laneNumber: '1',
-                        count: '35',
-                        date: '9/06/21',
-                        time: '02:46AM'
-                    },
-                ]}/>
+class App extends Component {
+    state = {
+        isLoading: false,
+        vehicleCountData: [],
+        locationDetails: {},
+        locationId: 'string'
+    }
+
+    async componentDidMount() {
+        try {
+            this.setState({isLoading: true});
+            const response = await axios.post(
+                `${apiBaseUrl}/vehicle_counts/getVehicleCountByRoadId/${this.state.locationId}?access_token=${accessToken}`);
+            const data = response.data.type;
+            const crossRoadDetails = data.crossRoadDetails
+console.log(crossRoadDetails)
+            this.setState({
+                isLoading: false,
+                vehicleCountData: data.vehicleCountDetails,
+                locationDetails: {
+                    cross_road_id: crossRoadDetails.cross_road_id,
+                    city: crossRoadDetails.city,
+                    subCity: crossRoadDetails.sub_city,
+                    latitude: crossRoadDetails.latitude,
+                    longitude: crossRoadDetails.longitude,
+                    name: crossRoadDetails.common_name,
+                    id: crossRoadDetails.id,
+                    createdAt: crossRoadDetails.createdAt,
+                    updatedAt: crossRoadDetails.updatedAt
+                },
+            });
+        } catch (e) {
+            console.log(e);
+        }
+
+    }
+
+
+    render() {
+        return (
+            <div className="App">
+                <NavBar title="Traffic Control"/>
+                <div className="flexbox-container"
+                     style={{display: "flex", flexDirection: "row"}}>
+                    <CollapsibleCities className="SideList"/>
+                    <MyTable isLoading={this.state.isLoading}
+                             locationDetails={this.state.locationDetails}
+                             list={this.state.vehicleCountData}
+                    />
+                </div>
             </div>
-
-
-        </div>
-    );
+        );
+    }
 }
 
 export default App;

@@ -1,7 +1,10 @@
 import React from 'react';
 import HeaderTitle from './HeaderTitle'
+import Spinner from "./Spinner";
 
-const Table = ({locationDetails, list}) => {
+const MyTable = ({isLoading, locationDetails, list}) => {
+    if (isLoading /*|| !locationDetails||!list*/) return <Spinner/>
+
     return (
         <div className="row">
             <div className="col">
@@ -33,12 +36,12 @@ const Table = ({locationDetails, list}) => {
                             <tbody>
                             {list.map((data, index) => (
                                 <tr>
-                                    <td>{index+1}</td>
+                                    <td>{index + 1}</td>
                                     <td>{data.side}</td>
-                                    <td>{data.laneNumber}</td>
-                                    <td>{data.count}</td>
-                                    <td>{data.date}</td>
-                                    <td>{data.time}</td>
+                                    <td>{data.lane_number}</td>
+                                    <td>{data.vehicle_number}</td>
+                                    <td>{data.createdAt.split("T")[0]}</td>
+                                    <td>{data.createdAt.split("T")[1].split(".")[0]}</td>
                                 </tr>
                             ))}
                             </tbody>
@@ -50,4 +53,4 @@ const Table = ({locationDetails, list}) => {
     );
 };
 
-export default Table;
+export default MyTable;

@@ -24,11 +24,11 @@
       "required": true
     },
     "latitude": {
-      "type": "number",
+      "type": "string",
       "required": true
     },
     "longitude": {
-      "type": "number",
+      "type": "string",
       "required": true
     },
     "common_name": {
