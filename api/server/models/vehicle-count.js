@@ -11,8 +11,6 @@ module.exports = function(Vehiclecount) {
         cross_road_id: id,
       },
     });
-    console.log(crossRoad);
-    console.log(vehicleCountData);
     return {
       type: {
         crossRoadDetails: crossRoad,
