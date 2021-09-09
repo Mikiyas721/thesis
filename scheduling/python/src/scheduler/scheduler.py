@@ -1,9 +1,8 @@
 import random
-from time import sleep
 
-from src.assigned_state import AssignedState
-from src.assigned_state import maximum_assignable_time
-from src.density_state import DensityState
+from src.scheduler.assigned_state import AssignedState
+from src.scheduler.assigned_state import maximum_assignable_time
+from src.scheduler.density_state import DensityState
 
 
 # import src.hardware_manipulator as hw
