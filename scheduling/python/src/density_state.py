@@ -19,16 +19,16 @@ class DensityState(object):
     def __init__(self,
                  car_density=None,
                  prime_capacities=None):
-        self.car_density: list[int] = [] if car_density is None else car_density,
-        self.prime_capacities: list = [100] * 4 if prime_capacities is None else prime_capacities,
+        self.car_density: list[int] = [] if car_density is None else car_density
+        self.prime_capacities: list = [100] * 4 if prime_capacities is None else prime_capacities
 
     def get_dense_lane_pair(self) -> [int]:
         dense_pair: [int] = []
         largest_density: int = 0
 
         for pair in possible_lane_pairs:
-            if self.car_density[0][pair[0]] + self.car_density[0][pair[1]] > largest_density:
-                largest_density = self.car_density[0][pair[0]] + self.car_density[0][pair[1]]
+            if self.car_density[pair[0]] + self.car_density[pair[1]] > largest_density:
+                largest_density = self.car_density[pair[0]] + self.car_density[pair[1]]
                 dense_pair = pair
         return dense_pair
 
@@ -38,8 +38,8 @@ class DensityState(object):
 
         for pair in possible_lane_pairs:
             if ((pair[0] in limit_reaching_lanes and pair[1] in limit_reaching_lanes) and
-                    (self.car_density[0][pair[0]] + self.car_density[0][pair[1]] > largest_density)):
-                largest_density = self.car_density[0][pair[0]] + self.car_density[0][pair[1]]
+                    (self.car_density[pair[0]] + self.car_density[pair[1]] > largest_density)):
+                largest_density = self.car_density[pair[0]] + self.car_density[pair[1]]
                 best_pair = pair
         return best_pair
 
@@ -48,7 +48,7 @@ class DensityState(object):
         density: str = ''
         for i in range(0, 8):
             label += DensityState.map_index_to_label(i) + '   '
-            density += str(self.car_density[0][i]) + '   '
+            density += str(self.car_density[i]) + '   '
         return label + '\n' + density
 
     @staticmethod
