@@ -15,13 +15,35 @@ class App extends Component {
     }
 
     async componentDidMount() {
+        this.loadData()
+    }
+
+
+    render() {
+        return (
+            <div className="App">
+                <NavBar title="Traffic Control" onRefresh={this.loadData()}/>
+                <div className="flexbox-container"
+                     style={{display: "flex", flexDirection: "row"}}>
+                    <CollapsibleCities className="SideList"/>
+                    <MyTable isLoading={this.state.isLoading}
+                             locationDetails={this.state.locationDetails}
+                             list={this.state.vehicleCountData}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    async loadData() {
+        console.log("loading");
         try {
             this.setState({isLoading: true});
             const response = await axios.post(
                 `${apiBaseUrl}/vehicle_counts/getVehicleCountByRoadId/${this.state.locationId}?access_token=${accessToken}`);
             const data = response.data.type;
             const crossRoadDetails = data.crossRoadDetails
-console.log(crossRoadDetails)
+
             this.setState({
                 isLoading: false,
                 vehicleCountData: data.vehicleCountDetails,
@@ -40,24 +62,6 @@ console.log(crossRoadDetails)
         } catch (e) {
             console.log(e);
         }
-
-    }
-
-
-    render() {
-        return (
-            <div className="App">
-                <NavBar title="Traffic Control"/>
-                <div className="flexbox-container"
-                     style={{display: "flex", flexDirection: "row"}}>
-                    <CollapsibleCities className="SideList"/>
-                    <MyTable isLoading={this.state.isLoading}
-                             locationDetails={this.state.locationDetails}
-                             list={this.state.vehicleCountData}
-                    />
-                </div>
-            </div>
-        );
     }
 }
 
