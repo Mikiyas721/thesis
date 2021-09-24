@@ -1,5 +1,7 @@
 # Miscellaneous
 *.class
+*.jpg
+*.png
 *.log
 *.pyc
 *.swp
