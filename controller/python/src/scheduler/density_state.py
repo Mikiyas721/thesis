@@ -1,3 +1,5 @@
+from src.http.http_client import LaneData
+
 possible_lane_pairs = [
     [1, 5],
     [3, 7],
@@ -51,6 +53,26 @@ class DensityState(object):
             density += str(self.car_density[i]) + '   '
         return label + '\n' + density
 
+    def get_lane_data(self, lane_index: int) -> LaneData:
+        if lane_index == 0:
+            return LaneData(side="a", lane_number=1, vehicle_count=self.car_density[lane_index])
+        elif lane_index == 1:
+            return LaneData(side="a", lane_number=2, vehicle_count=self.car_density[lane_index])
+        elif lane_index == 2:
+            return LaneData(side="b", lane_number=1, vehicle_count=self.car_density[lane_index])
+        elif lane_index == 3:
+            return LaneData(side="b", lane_number=2, vehicle_count=self.car_density[lane_index])
+        elif lane_index == 4:
+            return LaneData(side="c", lane_number=1, vehicle_count=self.car_density[lane_index])
+        elif lane_index == 5:
+            return LaneData(side="c", lane_number=2, vehicle_count=self.car_density[lane_index])
+        elif lane_index == 6:
+            return LaneData(side="d", lane_number=1, vehicle_count=self.car_density[lane_index])
+        elif lane_index == 7:
+            return LaneData(side="d", lane_number=2, vehicle_count=self.car_density[lane_index])
+        else:
+            raise Exception("Invalid lane index")
+
     @staticmethod
     def map_index_to_label(index: int) -> str:
         if index == 0:
@@ -71,3 +93,5 @@ class DensityState(object):
             return "d2"
         else:
             raise Exception("Invalid lane index")
+
+
