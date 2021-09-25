@@ -2,7 +2,7 @@ import time
 
 import src.hw.hardware_manipulator as hw
 from src.classifier.classifier import Classifier
-from src.http.http_client import HttpClient
+from src.http.loopback_client import LoopbackClient
 from src.scheduler.assigned_state import AssignedState
 from src.scheduler.density_state import DensityState
 from src.scheduler.scheduler import Scheduler
@@ -26,9 +26,9 @@ def main():
     scheduler = Scheduler(assigned_state, density_state)
     while True:
         # Adding data and sending to API
-        lane_data: [HttpClient] = []
+        lane_data: [LoopbackClient] = []
         for lane_index in density_state.car_density:
-            lane_data.append(HttpClient(density_state.get_lane_data(lane_index)))
+            lane_data.append(LoopbackClient(density_state.get_lane_data(lane_index)))
 
         for lane in lane_data:
             lane.add_record()
