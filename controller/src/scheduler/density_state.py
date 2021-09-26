@@ -1,4 +1,4 @@
-from src.http.http_client import LaneData
+from src.http.loopback_client import LaneData
 
 possible_lane_pairs = [
     [1, 5],

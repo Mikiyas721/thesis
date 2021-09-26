@@ -2,7 +2,7 @@ import requests
 from src.config import config
 
 
-class HttpClient:
+class LoopbackClient:
     def __init__(self, lane_data):
         self.lane_data: LaneData = lane_data
 
