@@ -13,13 +13,10 @@ class Scheduler:
         pass
 
     def calculate(self) -> AssignedState:
-        if len(self.assigned_state.critically_waiting) > 0:
-            raise Exception("Lane is waiting critically")
-            # TODO handle critically waiting lanes
         waited_long_lanes: list = self.assigned_state.waited_long_lanes()
         if len(waited_long_lanes) > 2:
-            raise Exception("More than two lanes waited long")
-            # TODO handle appropriately
+            self.re_evaluate_time()
+            return self.calculate()
         if 0 < len(waited_long_lanes) < 3:
             if len(waited_long_lanes) == 2:
                 if self.can_pass_together(waited_long_lanes[0], waited_long_lanes[1]):
@@ -40,26 +37,21 @@ class Scheduler:
                         ))
 
                         return self.calculate()
-                    if (self.density_state.prime_capacities[self.get_accepting_road_index(waited_long_lanes[0])] > 10 or
-                            self.density_state.prime_capacities[
-                                self.get_accepting_road_index(waited_long_lanes[1])] > 10):
-                        return self.evaluate_for_two_lanes(waited_long_lanes[0],
-                                                           waited_long_lanes[1])
-                    raise Exception("waited long but no accepting road")
-                    # TODO handle appropriately
+                    return self.evaluate_for_two_lanes(waited_long_lanes[0],
+                                                       waited_long_lanes[1])
 
                 else:
-                    chosen_lane_index: int
-                    if self.assigned_state.waiting_time[waited_long_lanes[0]] == waited_long_lanes[1]:
+                    if self.assigned_state.waiting_time[waited_long_lanes[0]] \
+                            == self.assigned_state.waiting_time[waited_long_lanes[1]]:
                         chosen_lane_index = waited_long_lanes[0] \
                             if self.density_state.car_density[waited_long_lanes[0]] > \
-                            self.density_state.car_density[waited_long_lanes[1]] else \
+                               self.density_state.car_density[waited_long_lanes[1]] else \
                             waited_long_lanes[1]
 
                     else:
                         chosen_lane_index = waited_long_lanes[0] \
                             if self.assigned_state.waiting_time[waited_long_lanes[0]] > \
-                            self.assigned_state.waiting_time[waited_long_lanes[1]] else \
+                               self.assigned_state.waiting_time[waited_long_lanes[1]] else \
                             waited_long_lanes[1]
 
                     chosen_lane_pair_index: int = self.get_best_pair_for_waited_long(chosen_lane_index)
@@ -153,6 +145,11 @@ class Scheduler:
                 best_pair = pair
         return best_pair
 
+    def re_evaluate_time(self):
+        for i in range(0, 8):
+            if self.assigned_state.waiting_time[i] > 40:
+                self.assigned_state.waiting_time[i] -= 40
+
     def when_time_is_up(self):
         print(self.density_state.car_density_string())
         print(self.assigned_state.state_string())
@@ -191,11 +188,3 @@ class Scheduler:
         pair = [x + 1, (x - 1) % 8] if x % 2 == 0 else [x - 1, (x + 1) % 8]
         pair.append(x + 4 if x <= 3 else x - 4)
         return pair
-
-    @staticmethod
-    def re_evaluate_time(waiting_time: list) -> list:
-        print("Re-evaluating")
-        for i in range(0, 8):
-            if waiting_time[i] > 40:
-                waiting_time[i] -= 40
-        return waiting_time

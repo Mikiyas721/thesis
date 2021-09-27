@@ -7,11 +7,9 @@ class AssignedState(object):
     def __init__(self,
                  led_state=None,
                  waiting_time=None,
-                 critically_waiting=None,
                  allocated_time=None):
         self.led_state: list = [False] * 8 if led_state is None else led_state
         self.waiting_time: list = [0] * 8 if waiting_time is None else waiting_time
-        self.critically_waiting: list = [] if critically_waiting is None else critically_waiting
         self.allocated_time: int = 0 if allocated_time is None else allocated_time
 
     def waited_long_lanes(self):

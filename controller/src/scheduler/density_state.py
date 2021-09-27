@@ -22,7 +22,6 @@ class DensityState(object):
                  car_density=None,
                  prime_capacities=None):
         self.car_density: list[int] = [] if car_density is None else car_density
-        self.prime_capacities: list = [100] * 4 if prime_capacities is None else prime_capacities
 
     def get_dense_lane_pair(self) -> [int]:
         dense_pair: [int] = []
