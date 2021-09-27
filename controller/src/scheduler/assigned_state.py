@@ -30,7 +30,7 @@ class AssignedState(object):
         # Not effective when two lanes waited long but cant pass together
         closest: int = maximum_waiting_time
         for i in range(0, 8):
-            if i == selected_lane1 | i == selected_lane2:
+            if i == selected_lane1 or i == selected_lane2:
                 continue
             if ((self.waiting_time[i] != maximum_waiting_time) and
                     closest > maximum_waiting_time - self.waiting_time[i]):
