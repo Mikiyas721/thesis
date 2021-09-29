@@ -3,7 +3,7 @@ import cv2
 
 class Classifier:
     def __init__(self, classifier_path=None):
-        self.classifier_path = 'cascade.xml' if classifier_path is None else classifier_path
+        self.classifier_path = 'E:\\Files\\Code\\Thesis\\controller\\src\\classifier\\cascade.xml' if classifier_path is None else classifier_path
         self.image_resized = None
         self.cars = None
 
@@ -20,7 +20,7 @@ class Classifier:
             print('please use count_cars() first')
         else:
             for (x, y, w, h) in self.cars:
-                cv2.rectangle(self.image_resized, (x, y), (x + w, y + h), (255, 0, 0), 2)
+                cv2.rectangle(self.image_resized, (x, y), (x + w, y + h), (0, 255, 255), 2)
             cv2.imshow('img', self.image_resized)
             cv2.waitKey()
             cv2.destroyAllWindows()
