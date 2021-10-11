@@ -24,3 +24,12 @@ class LaneData:
         self.lane_number: int = lane_number
         self.vehicle_count: int = vehicle_count
         self.cross_road_id: str = 'string' if cross_road_id is None else cross_road_id
+
+
+httpClient = LoopbackClient(lane_data=LaneData(
+    side='a',
+    lane_number=2,
+    vehicle_count=15,
+))
+
+httpClient.add_record()

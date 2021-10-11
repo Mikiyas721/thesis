@@ -1,3 +1,5 @@
+import os
+
 import cv2
 
 
@@ -13,6 +15,7 @@ class Classifier:
         self.image_resized = cv2.resize(image, (320, 320))
         gray = cv2.cvtColor(self.image_resized, cv2.COLOR_BGR2GRAY)
         self.cars = car_classifier.detectMultiScale(gray, 1.1, 2)
+        self.draw_on_detected_cars()
         return len(self.cars)
 
     def draw_on_detected_cars(self):

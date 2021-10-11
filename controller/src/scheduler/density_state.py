@@ -19,8 +19,7 @@ possible_lane_pairs = [
 class DensityState(object):
 
     def __init__(self,
-                 car_density=None,
-                 prime_capacities=None):
+                 car_density=None):
         self.car_density: list[int] = [] if car_density is None else car_density
 
     def get_dense_lane_pair(self) -> [int]:

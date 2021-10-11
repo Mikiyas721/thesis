@@ -26,9 +26,9 @@ class Scheduler:
                         waiting_time = self.get_updated_waiting_time(
                             waited_long_lanes[0],
                             waited_long_lanes[
-                                1]) if lane1_density == 0 and lane2_density == 0 \
+                                1], allocated_time=0) if lane1_density == 0 and lane2_density == 0 \
                             else self.get_updated_waiting_time_when_1_empty_lane(
-                            waited_long_lanes[0] if lane1_density == 0 else waited_long_lanes[1])
+                            waited_long_lanes[0] if lane1_density == 0 else waited_long_lanes[1],allocated_time=0)
 
                         self.__setattr__('assigned_state', AssignedState(
                             allocated_time=0,
@@ -85,12 +85,11 @@ class Scheduler:
         allocated_time: int = (density_based_time if density_based_time < closest_waiting_time_to_max
                                else closest_waiting_time_to_max) \
             if closest_waiting_time_to_max < 40 else density_based_time
-
         return AssignedState(
             allocated_time=allocated_time,
             waiting_time=self.get_updated_waiting_time(
                 lane1_index,
-                lane2_index),
+                lane2_index, allocated_time=allocated_time),
             led_state=self.get_updated_led_state(lane1_index, lane2_index),
         )
 
@@ -114,18 +113,18 @@ class Scheduler:
             random_density_state.append(self.density_state.car_density[i] + to_be_added - to_be_subtracted)
         return DensityState(car_density=random_density_state)
 
-    def get_updated_waiting_time(self, led_1_index: int, led_2_index: int) -> list:
+    def get_updated_waiting_time(self, led_1_index: int, led_2_index: int, allocated_time) -> list:
         waiting_time: [int] = [0] * 8
         for i in range(0, 8):
             if not (i == led_1_index or i == led_2_index) and self.density_state.car_density[i] > 0:
-                waiting_time[i] = self.assigned_state.waiting_time[i] + self.assigned_state.allocated_time
+                waiting_time[i] = self.assigned_state.waiting_time[i] + allocated_time
         return waiting_time
 
-    def get_updated_waiting_time_when_1_empty_lane(self, led_index: int) -> list:
+    def get_updated_waiting_time_when_1_empty_lane(self, led_index: int, allocated_time) -> list:
         waiting_time: [int] = [0] * 8
         for i in range(0, 8):
             if i != led_index and self.density_state.car_density[i] > 0:
-                waiting_time[i] = self.assigned_state.waiting_time[i] + self.assigned_state.allocated_time
+                waiting_time[i] = self.assigned_state.waiting_time[i] + allocated_time
         return waiting_time
 
     def get_best_pair_for_waited_long(self, x: int) -> int:
